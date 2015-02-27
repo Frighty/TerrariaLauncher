@@ -39,6 +39,11 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
 
 import javax.swing.JTextArea;
 
@@ -47,22 +52,24 @@ import java.awt.event.WindowEvent;
 
 import javax.swing.JScrollPane;
 import javax.swing.text.DefaultCaret;
+
 import java.awt.Font;
 
 public class LauncherUI {
 
 	private static final String TERRARIA_SERVER_EXE_RELATIVE_PATH = "\\Steam\\SteamApps\\common\\Terraria\\TerrariaServer.exe";
 	private static final String LOCK_FILENAME = "\\lock.ed";
-	private static final String STOP_SERVER = "Stop server";
-	private static final String START_SERVER = "Start server";
+	static final String STOP_SERVER = "Stop server";
+	static final String START_SERVER = "Start server";
 	private static final String TERRARIA_GAME_ID = "steam://rungameid/105600";
 	private static final String STEAM_EXE_RELATIVE_PATH = "\\Steam\\Steam.exe";
 	private static final String DEFAULT_WORLD_RELATIVE_PATH = "\\Documents\\my games\\Terraria\\Worlds\\Parnassus-_Kabinett.wld";
 	private JFrame frame;
 	private JPasswordField passwordField;
 	private JTextField textField_1;
-	private JTextArea textArea;
-	private JButton btnStartClient;
+	public JTextArea textArea;
+	public JButton btnStartClient;
+	public JButton btnNewButton;
 	
 	// Process IO
 	private Process serverProcess;
@@ -106,6 +113,9 @@ public class LauncherUI {
 		}
 		initialize();
 		
+		// run file watcher
+		Thread fw = new Thread(new FileWatcher(this, getLockFile().getParentFile().getAbsolutePath()));
+		fw.start();
 	}
 
 	/**
@@ -226,7 +236,7 @@ public class LauncherUI {
 		gbc_lblPassword.gridy = 2;
 		frame.getContentPane().add(lblPassword, gbc_lblPassword);
 		
-		final JButton btnNewButton = new JButton(START_SERVER);
+		btnNewButton = new JButton(START_SERVER);
 		
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
